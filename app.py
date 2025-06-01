@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+from bdd_generator import generate_bdd_files
 import requests
 
 app = Flask(__name__)
@@ -33,6 +34,18 @@ def chat():
         conversation_history.append({"role": "assistant", "content": answer})
         return jsonify({"response": answer})
     except requests.RequestException as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/generate-bdd", methods=["POST"])
+def generate_bdd():
+    test_prompt = request.json.get("prompt", "")
+    if not test_prompt:
+        return jsonify({"error": "No BDD prompt provided"}), 400
+
+    try:
+        result = generate_bdd_files(test_prompt)
+        return jsonify(result)
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
